@@ -20,29 +20,29 @@ async def play(_, message):
         return await message.reply("❌ أرسل رابط التشغيل بعد الأمر.")
     
     link = message.command[1]
-    msg = await message.reply("⏳ جاري محاولة التشغيل...")
+    await message.reply("⏳ جاري محاولة التشغيل...")
     
     try:
         await call_py.play(
             GROUP_ID,
             MediaStream(link)
         )
-        await msg.edit("✅ تم التشغيل بنجاح في المجموعة!")
+        await message.reply("✅ تم التشغيل بنجاح!")
     except Exception as e:
-        await msg.edit(f"❌ حدث خطأ أثناء التشغيل:\n{e}")
+        await message.reply(f"❌ حدث خطأ أثناء التشغيل:\n{e}")
 
 @app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("stop"))
 async def stop(_, message):
     try:
         await call_py.leave_call(GROUP_ID)
-        await message.reply("⏹ تم الإيقاف والمغادرة!")
+        await message.reply("⏹ تم الإيقاف!")
     except Exception as e:
-        await message.reply(f"❌ خطأ عند محاولة الإيقاف: {e}")
+        await message.reply(f"❌ خطأ: {e}")
 
 async def main():
     await app.start()
     await call_py.start()
-    print("Bot is online and ready!")
+    print("Bot is running...")
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
