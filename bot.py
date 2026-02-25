@@ -2,7 +2,7 @@ import os
 import asyncio
 from pyrogram import Client, filters
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped
+from pytgcalls.types import AudioPiped, MediaStream
 
 # جلب المتغيرات من البيئة
 API_ID = int(os.getenv("API_ID"))
@@ -27,8 +27,8 @@ async def play(_, message):
     await message.reply("⏳ جاري محاولة التشغيل...")
     
     try:
-        # استخدام join_group_call للإصدار 3.x
-        await call_py.join_group_call(
+        # في إصدار 3.0.0.dev24 يتم استخدام play مباشرة أو join_group_call
+        await call_py.play(
             GROUP_ID,
             AudioPiped(link)
         )
@@ -41,7 +41,7 @@ async def play(_, message):
 async def stop(_, message):
     global playing
     try:
-        await call_py.leave_group_call(GROUP_ID)
+        await call_py.leave_call(GROUP_ID)
         playing = False
         await message.reply("⏹ تم الإيقاف!")
     except Exception as e:
@@ -58,5 +58,4 @@ async def main():
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    asyncio.get_event_loop().run_until_complete(main())
