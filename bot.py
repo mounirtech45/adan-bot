@@ -17,19 +17,20 @@ call_py = PyTgCalls(app)
 @app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("play"))
 async def play(_, message):
     if len(message.command) < 2:
-        return await message.reply("❌ أرسل رابط التشغيل بعد الأمر.")
+        return await message.reply("❌ أرسل رابط التشغيل.")
     
     link = message.command[1]
-    await message.reply("⏳ جاري محاولة التشغيل...")
+    await message.reply("⏳ جاري التشغيل...")
     
     try:
+        # استخدام play المباشر المتوافق مع إصدار 2.1.0
         await call_py.play(
             GROUP_ID,
             MediaStream(link)
         )
         await message.reply("✅ تم التشغيل بنجاح!")
     except Exception as e:
-        await message.reply(f"❌ حدث خطأ أثناء التشغيل:\n{e}")
+        await message.reply(f"❌ حدث خطأ:\n{e}")
 
 @app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("stop"))
 async def stop(_, message):
@@ -42,7 +43,7 @@ async def stop(_, message):
 async def main():
     await app.start()
     await call_py.start()
-    print("Bot is running...")
+    print("Bot is Started!")
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
