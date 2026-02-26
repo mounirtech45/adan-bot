@@ -2,9 +2,9 @@ import os
 import asyncio
 from pyrogram import Client, filters
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream
+from pytgcalls.types import AudioPiped
 
-# إعداد المتغيرات
+# جلب المتغيرات
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -17,34 +17,33 @@ call_py = PyTgCalls(app)
 @app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("play"))
 async def play(_, message):
     if len(message.command) < 2:
-        return await message.reply("❌ أرسل الرابط بعد الأمر")
+        return await message.reply("❌ أرسل الرابط")
     
     link = message.command[1]
-    msg = await message.reply("⏳ جاري التشغيل...")
-    
+    await message.reply("⏳ جاري التشغيل...")
     try:
+        # الإصدار 3.0.0 يستخدم هذا التنسيق
         await call_py.play(
             GROUP_ID,
-            MediaStream(link)
+            AudioPiped(link)
         )
-        await msg.edit("✅ تم التشغيل بنجاح!")
+        await message.reply("✅ تم التشغيل")
     except Exception as e:
-        await msg.edit(f"❌ خطأ في التشغيل:\n{e}")
+        await message.reply(f"❌ خطأ: {e}")
 
 @app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("stop"))
 async def stop(_, message):
     try:
         await call_py.leave_call(GROUP_ID)
-        await message.reply("⏹ تم الإيقاف!")
-    except Exception as e:
-        await message.reply(f"❌ خطأ: {e}")
+        await message.reply("⏹ تم الإيقاف")
+    except:
+        pass
 
 async def main():
     await app.start()
     await call_py.start()
-    print("--- BOT IS LIVE ---")
+    print("STARTED")
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    asyncio.get_event_loop().run_until_complete(main())
