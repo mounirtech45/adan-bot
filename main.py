@@ -1,64 +1,44 @@
 import os
 import asyncio
-from flask import Flask
-from threading import Thread
 from pyrogram import Client, filters
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream
+from pytgcalls.types.input_stream import AudioPiped
 
-# --- إعداد Port وهمي لإرضاء منصة Render ---
-web_app = Flask(__name__)
-
-@web_app.route('/')
-def home():
-    return "Bot is Running!"
-
-def run_web():
-    web_app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-
-# --- إعداد البوت ---
+# إحضار البيانات
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 GROUP_ID = int(os.getenv("GROUP_ID"))
 OWNER_ID = int(os.getenv("OWNER_ID"))
 
-app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("music_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 call_py = PyTgCalls(app)
 
-@app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("play"))
-async def play_audio(_, message):
+@app.on_message(filters.user(OWNER_ID) & filters.command("play"))
+async def play(_, message):
     if len(message.command) < 2:
-        return await message.reply("❌ أرسل الرابط بعد الأمر.")
-    
+        return await message.reply("❌ أرسل الرابط")
     link = message.command[1]
-    msg = await message.reply("⏳ جاري محاولة التشغيل...")
-    
+    msg = await message.reply("⏳ جاري البدء...")
     try:
-        await call_py.play(
-            GROUP_ID,
-            MediaStream(link)
-        )
-        await msg.edit("✅ تم التشغيل في الاتصال المرئي!")
+        await call_py.join_group_call(GROUP_ID, AudioPiped(link))
+        await msg.edit("✅ تم التشغيل")
     except Exception as e:
-        await msg.edit(f"❌ خطأ:\n{e}")
+        await msg.edit(f"❌ خطأ: {e}")
 
-@app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("stop"))
-async def stop_audio(_, message):
+@app.on_message(filters.user(OWNER_ID) & filters.command("stop"))
+async def stop(_, message):
     try:
-        await call_py.leave_call(GROUP_ID)
-        await message.reply("⏹ تم إيقاف التشغيل.")
-    except Exception as e:
-        await message.reply(f"❌ لا يوجد تشغيل حالي أو حدث خطأ: {e}")
+        await call_py.leave_group_call(GROUP_ID)
+        await message.reply("⏹ توقف")
+    except:
+        pass
 
-async def start_bot():
+async def main():
     await app.start()
     await call_py.start()
-    print("--- BOT STARTED SUCCESSFULLY ---")
+    print("BOT IS RUNNING ON RAILWAY")
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    # تشغيل السيرفر الوهمي في خلفية منفصلة
-    Thread(target=run_web).start()
-    # تشغيل البوت
-    asyncio.run(start_bot())
+    asyncio.run(main())
