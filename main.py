@@ -1,10 +1,23 @@
 import os
 import asyncio
 from pyrogram import Client, filters
-from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream
 
-# إحضار البيانات من المتغيرات
+# استيراد مرن جداً لتجنب ImportError
+try:
+    from pytgcalls import PyTgCalls
+    from pytgcalls.types import AudioPiped
+except ImportError:
+    # محاولة الاستيراد من المسار البديل في الإصدارات التجريبية
+    try:
+        from pytgcalls.pytgcalls import PyTgCalls
+        from pytgcalls.types.input_stream import AudioPiped
+    except:
+        # إذا فشل كل شيء، سنحاول الوصول للكلاس مباشرة
+        import pytgcalls
+        PyTgCalls = pytgcalls.PyTgCalls
+        AudioPiped = pytgcalls.types.AudioPiped
+
+# إحضار البيانات
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -17,32 +30,32 @@ call_py = PyTgCalls(app)
 @app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("play"))
 async def play(_, message):
     if len(message.command) < 2:
-        return await message.reply("❌ أرسل الرابط بعد الأمر")
+        return await message.reply("❌ أرسل الرابط")
     
     link = message.command[1]
-    msg = await message.reply("⏳ جاري البدء...")
+    msg = await message.reply("⏳ جاري التشغيل...")
     
     try:
         await call_py.play(
             GROUP_ID,
-            MediaStream(link)
+            AudioPiped(link)
         )
-        await msg.edit("✅ تم التشغيل بنجاح!")
+        await msg.edit("✅ تم التشغيل")
     except Exception as e:
-        await msg.edit(f"❌ خطأ:\n{e}")
+        await msg.edit(f"❌ خطأ: {e}")
 
 @app.on_message(filters.private & filters.user(OWNER_ID) & filters.command("stop"))
 async def stop(_, message):
     try:
         await call_py.leave_call(GROUP_ID)
-        await message.reply("⏹ تم الإيقاف!")
-    except Exception as e:
-        await message.reply(f"❌ لم يتم التشغيل أصلاً أو حدث خطأ: {e}")
+        await message.reply("⏹ توقف")
+    except:
+        pass
 
 async def main():
     await app.start()
     await call_py.start()
-    print("--- البوت يعمل الآن ---")
+    print("STARTED SUCCESSFULLY")
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
