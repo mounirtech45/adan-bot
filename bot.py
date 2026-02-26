@@ -1,10 +1,16 @@
 import os
 import asyncio
 from pyrogram import Client, filters
-from pytgcalls import PyTgCalls
+
+# استيراد بديل لتجنب خطأ ImportError في النسخ التجريبية
+try:
+    from pytgcalls import PyTgCalls
+except ImportError:
+    from pytgcalls.pytgcalls import PyTgCalls
+
 from pytgcalls.types import AudioPiped
 
-# جلب المتغيرات
+# إعداد المتغيرات
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -22,7 +28,6 @@ async def play(_, message):
     link = message.command[1]
     await message.reply("⏳ جاري التشغيل...")
     try:
-        # الإصدار 3.0.0 يستخدم هذا التنسيق
         await call_py.play(
             GROUP_ID,
             AudioPiped(link)
@@ -42,8 +47,8 @@ async def stop(_, message):
 async def main():
     await app.start()
     await call_py.start()
-    print("STARTED")
+    print("--- البوت يعمل الآن ---")
     await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.run(main())
