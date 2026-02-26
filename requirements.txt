@@ -2,4 +2,5 @@ pyrogram==2.0.106
 tgcrypto==1.2.5
 yt-dlp
 ffmpeg-python
-https://github.com/pytgcalls/pytgcalls/archive/master.zip
+flask
+pytgcalls==2.1.0
